@@ -11,6 +11,13 @@ that I just figured I'd write my own.
 You can't say that it's perfect but it does everything I need and
 some.
 
+## Dependencies
+
+```
+bash scrot ffcast ffmpeg
+dunstify optipng # (optional)
+```
+
 ## Install
 
 ```
@@ -30,8 +37,10 @@ snip help
 
 ## TODO
 
-Add support for different formats, such as `mp4` for record:
+- Add support for different formats, such as `mp4` for record:
 
 ```
 ffmpeg -f x11grab -video_size 1920x1080 -framerate 25 -i $DISPLAY -f alsa -i default -c:v libx264 -preset ultrafast -c:a aac screen.mp4
 ```
+
+- Add support for other notification utilies than `dunstify`
