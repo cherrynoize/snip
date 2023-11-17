@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+# snip | simple screenshot/screencast utility
+#
+# author | cherrynoize
+# https://github.com/cherrynoize
+
+# default destination path
+dest_path="${SNIP_PATH:-$HOME/scrot}"
+
+# default delay value before capture (in seconds)
+capture_delay="${SNIP_DELAY:-".1"}"
+
+# default command to execute after capture
+post_capture_cmd="${SNIP_CMD:-"optipng \"%DEST%\" &"}"
+
+fullscreen=true
+verbose=1
+
+dest_filename="$(date '+%Y-%m-%d-%H%M%S')_"'$wx$h_'"$(hostname)-${USER}_snip"
+dest_file_ext=.png
+
+tmp_dir=/tmp
+
+notification_title="Screenshot taken"
+notification_body="Saved to '$dest_path/$dest_filename$dest_file_ext'"
+notification_id=5445
+notification_timeout=5000
+
+usage () {
+cat<<EOF
+snip | simple screenshot/screencast utility
+
+usage: snip [command] [options]
+
+command:
+  help        show this help message
+  screenshot  take screenshot and store into output file
+  clipboard   take screenshot and store it in clipboard
+  record      record screencast to output file
+
+options:
+  -w|--window           capture active window only (currently only for screenshots)
+  -e|--execute [cmd]    command to execute after capture
+  -i|--nid [id]         notification id
+  -t|--ntimeout [time]  notification timeout
+  -T|--ntitle [title]   notification title
+  -B|--nbody [body]     notification body
+  -q|--quiet            do not show notifications and output less stuff ${verbose:-(default)}
+  -v|--verbose          show notifications and output more stuff ${verbose:+(default)}
+
+any other option is passed as is to the utility used for each task (scrot for screenshot, ffcast for clipboard or ffmpeg for record)
+
+environment variables:
+  SNIP_PATH   default destination path for snip (default: $dest_path)
+  SNIP_DELAY  default delay before capture (in seconds) (default: $capture_delay)
+  SNIP_CMD    default command to be executed after capture (default: '$post_capture_cmd')
+
+command line options take precedence over environment variables. if no value is provided, snip will fallback to its default.
+
+magic values:
+  %DEST%  will be converted to path/to/destination (only inside command to execute)
+EOF
+}
+
+while [ -n "$1" ]; do
+  case "$1" in
+    [0-9]*|.[0-9]*)
+      # set value for delay (in seconds) before capture
+      capture_delay="$1"
+      shift
+      ;;
+    -w|--window)
+      fullscreen=
+      shift
+      ;;
+    -e|--execute)
+      # command to execute after capture
+      post_capture_cmd="$2"
+      e_flag_passed=true
+      shift 2
+      ;;
+    -i|--nid)
+      notification_id="$2"
+      shift 2
+      ;;
+    -t|--ntimeout)
+      notification_timeout="$2"
+      shift 2
+      ;;
+    -T|--ntitle)
+      notification_title="$2"
+      shift 2
+      ;;
+    -B|--nbody)
+      notification_body="$2"
+      shift 2
+      ;;
+    -q|--quiet)
+      verbose=
+      shift
+      ;;
+    -v|--verbose)
+      verbose=1
+      shift
+      ;;
+    -*)
+      params+="$1 "
+      shift
+      ;;
+    *)
+      cmd="$1"
+      shift
+      ;;
+  esac
+done
+
+# create path to destination
+if [ ! -e "$dest_path" ]; then
+  mkdir -p "$dest_path"
+fi
+
+# wait for set delay before capture
+sleep "$capture_delay"
+
+case "$cmd" in
+  help)
+    usage
+    exit
+    ;;
+  clipboard)
+    # save image inside /tmp and to clipboard
+    dest_path="$tmp_dir"
+    scrot $params "$dest_path/$dest_filename$dest_file_ext" -e 'xclip -selection clipboard -t image/png -i \"$f\"'
+    ;;
+  record)
+    if [ "$dest_path" = "$SNIP_PATH" ]; then
+      dest_path="${dest_path//scrot/scast}"
+    fi
+    screen_res="$(xrandr | grep '*' | awk '{print $1;}')"
+    dest_filename="${dest_filename//\$wx\$h/$screen_res}"
+    dest_file_ext=.mkv
+
+    ffmpeg -f x11grab -video_size "$screen_res" -framerate 25 -i "$DISPLAY" -c:v ffvhuff "$dest_path/$dest_filename$dest_file_ext"
+    ;;
+  screenshot|*)
+    # take screenshot
+    if [ -n "$fullscreen" ]; then
+      # fullscreen capture
+      scrot $params "$dest_path/$dest_filename$dest_file_ext"
+    else
+      # active window only
+      dest="${dest//\$wx\$h/win}"
+      ffcast -q -# "$(xdotool getactivewindow)" png "$dest"
+    fi
+    ;;
+esac
+
+post_capture_cmd="${post_capture_cmd//%DEST%]/$dest_path\/$dest_filename$dest_file_ext}"
+eval "$post_capture_cmd"
+
+if [ -n "$verbose" ]; then
+  # show notification after capture
+  dunstify --action="default,Default" -t "$notification_timeout" -r "$notification_id" "$notification_title" "$notification_body"
+fi
