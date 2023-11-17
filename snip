@@ -4,22 +4,28 @@
 # author | cherrynoize
 # https://github.com/cherrynoize
 
-# default destination path
-dest_path="${SNIP_PATH:-$HOME/scrot}"
+config_file="${SNIPRC:-"$HOME/.config/snip/sniprc"}"
+[ -e "$config_file" ] && . "$config_file"
 
-# default delay value before capture (in seconds)
-capture_delay="${SNIP_DELAY:-".1"}"
+# default destination path
+dest_path="${SNIP_PATH:-$HOME/snip}"
+
+# default time delay before capture (in seconds)
+capture_delay="${SNIP_DELAY:-"0"}"
 
 # default command to execute after capture
 post_capture_cmd="${SNIP_CMD:-"optipng \"%DEST%\" &"}"
 
-fullscreen=true
-verbose=1
+fullscreen="${SNIP_DEFAULT_FULLSCREEN:-true}"
+verbose="${SNIP_DEFAULT_VERBOSITY:-1}"
 
 dest_filename="$(date '+%Y-%m-%d-%H%M%S')_"'$wx$h_'"$(hostname)-${USER}_snip"
-dest_file_ext=.png
+dest_filename="${SNIP_FILENAME:-"$dest_filename"}"
 
-tmp_dir=/tmp
+default_img_fmt="${SNIP_IMG_FILE:-png}"
+default_vid_fmt="${SNIP_VID_FILE:-mp4}"
+
+tmp_dir="${SNIP_TMP_DIR:-/tmp}"
 
 # outputs full destination path
 join_dest_path () {
@@ -103,7 +109,7 @@ while [ -n "$1" ]; do
       shift
       ;;
     -w|--window)
-      fullscreen=
+      fullscreen=false
       shift
       ;;
     -e|--execute)
@@ -160,6 +166,7 @@ case "$cmd" in
   help)
     ;;
   record)
+    file_format="${file_format:-"$default_vid_fmt"}"
     new_vid_ext="${vid_fmt_ext[file_format]}"
     
     if [ -n "$new_vid_ext" ]; then
@@ -169,6 +176,7 @@ case "$cmd" in
     fi
     ;;
   screenshot|clipboard|*)
+    file_format="${file_format:-"$default_img_fmt"}"
     new_img_ext="${img_fmt_ext[file_format]}"
 
     if [ -n "$new_img_ext" ]; then
@@ -193,8 +201,9 @@ case "$cmd" in
     scrot $params "$(join_dest_path)" -e 'xclip -selection clipboard -t image/png -i \"$f\"'
     ;;
   record)
+    # try to switch to default screencast path if set
     if [ "$dest_path" = "$SNIP_PATH" ]; then
-      dest_path="${dest_path//scrot/scast}"
+      dest_path="${SNIP_PATH_SCAST:-"$dest_path"}"
     fi
     screen_res="$(xrandr | grep '*' | awk '{print $1;}')"
     dest_filename="${dest_filename//\$wx\$h/$screen_res}"
@@ -211,7 +220,7 @@ case "$cmd" in
     ;;
   screenshot|*)
     # take screenshot
-    if [ -n "$fullscreen" ]; then
+    if [ "$fullscreen" = "true" ]; then
       # fullscreen capture
       scrot $params "$(join_dest_path)"
     else

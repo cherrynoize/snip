@@ -23,8 +23,13 @@ dunstify optipng # (optional)
 ```
 git clone https://github.com/cherrynoize/snip
 cd snip
+
+# make executable and hard link into a PATH directory
 chmod +x snip
 ln snip /usr/local/bin/snip
+
+# copy without overwriting example configuration file
+cp -n sniprc.example "${SNIPRC:-"${XDG_CONFIG_HOME:-"$HOME/.config/snip"}"}/sniprc"
 ```
 
 Or just place it anywhere that is easily reachable.
