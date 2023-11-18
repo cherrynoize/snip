@@ -167,7 +167,7 @@ case "$cmd" in
     ;;
   record)
     file_format="${file_format:-"$default_vid_fmt"}"
-    new_vid_ext="${vid_fmt_ext[file_format]}"
+    new_vid_ext="${vid_fmt_ext[$file_format]}"
     
     if [ -n "$new_vid_ext" ]; then
       dest_file_ext="$new_vid_ext"
@@ -177,7 +177,7 @@ case "$cmd" in
     ;;
   screenshot|clipboard|*)
     file_format="${file_format:-"$default_img_fmt"}"
-    new_img_ext="${img_fmt_ext[file_format]}"
+    new_img_ext="${img_fmt_ext[$file_format]}"
 
     if [ -n "$new_img_ext" ]; then
       dest_file_ext="$new_img_ext"
