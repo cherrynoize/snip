@@ -33,9 +33,13 @@ join_dest_path () {
 }
 
 notification_title="Screenshot taken"
-notification_body="Saved to '$(join_dest_path)'"
 notification_id=5445
 notification_timeout=5000
+
+send_notification () {
+  notification_body="Saved to '$(join_dest_path)'"
+  dunstify --action="default,Default" -t "$notification_timeout" -r "$notification_id" "$notification_title" "$notification_body"
+}
 
 # image file formats
 declare -A img_fmt_ext=(
@@ -174,6 +178,8 @@ case "$cmd" in
     else
       throw_error codec
     fi
+
+    notification_title="Recording stopped"
     ;;
   screenshot|clipboard|*)
     file_format="${file_format:-"$default_img_fmt"}"
@@ -207,14 +213,13 @@ case "$cmd" in
     fi
     screen_res="$(xrandr | grep '*' | awk '{print $1;}')"
     dest_filename="${dest_filename//\$wx\$h/$screen_res}"
-    dest_file_ext=.mkv
 
     case "$file_format" in
       mkv)
-        ffmpeg -f x11grab -video_size "$screen_res" -framerate 25 -i "$DISPLAY" -c:v ffvhuff "$(join_dest_path)"
+        ffmpeg -f x11grab -video_size "$screen_res" -framerate 25 -stream_loop -1 -i "$DISPLAY" -c:v ffvhuff "$(join_dest_path)"
         ;;
       mp4|*)
-        ffmpeg -f x11grab -video_size "$screen_res" -framerate 25 -i "$DISPLAY" -f alsa -i default -c:v libx264 -preset ultrafast -c:a aac "$(join_dest_path)"
+        ffmpeg -f x11grab -video_size "$screen_res" -framerate 25 -stream_loop -1 -i "$DISPLAY" -f alsa -i default -c:v libx264 -preset ultrafast -c:a aac "$(join_dest_path)"
         ;;
     esac
     ;;
@@ -236,5 +241,5 @@ eval "$post_capture_cmd"
 
 if [ -n "$verbose" ]; then
   # show notification after capture
-  dunstify --action="default,Default" -t "$notification_timeout" -r "$notification_id" "$notification_title" "$notification_body"
+  send_notification
 fi
