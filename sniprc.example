@@ -20,8 +20,11 @@ export SNIP_PATH_SCAST="$HOME/pictures/scast"
 # default time delay before capture (in seconds)
 #export SNIP_DELAY=0
 
-# default command to execute after capture
-#export SNIP_CMD="optipng \"%DEST%\" &"
+# default command to execute after screenshots (compress png)
+#export SNIP_SCREENSHOT_CMD="optipng \"%DEST%\" &"
+
+# default command to execute after screencasts (strip audio)
+#export SNIP_RECORD_CMD="ffmpeg -i \"%DEST%\" -c copy -an \"noa_%DEST%\" && mv \"noa_%DEST%\" \"%DEST%\"" # strip audio from video
 
 # default tmp dir
 #export SNIP_TMP_DIR=/tmp
