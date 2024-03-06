@@ -104,6 +104,7 @@ record_mp4 () {
     ffmpeg -f x11grab -video_size "$screen_res" \
       -framerate 24 -stream_loop -1 \
       -i "$DISPLAY" \
+      -pix_fmt yuv420p \
       -c:v libx264 -c:a aac \
       -preset ultrafast \
       "${1:-"output.mp4"}"
