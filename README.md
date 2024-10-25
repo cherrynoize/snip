@@ -8,14 +8,14 @@ Eventually I was wasting so much time looking through the [list
 of screencast utilies on the Arch wiki](https://wiki.archlinux.org/title/Screen_capture#Screencast_software)
 that I just figured I'd write my own.
 
-You can't say that it's perfect but it does everything I need and
+I wouldn't say that it's perfect but it does everything I need and
 some.
 
 ## Dependencies
 
 ```
 bash scrot ffcast ffmpeg
-dunstify optipng # (optional)
+dunstify oxipng # (optional)
 ```
 
 ## Install

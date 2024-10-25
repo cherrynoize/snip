@@ -16,7 +16,7 @@ capture_delay="${SNIP_DELAY:-"0"}"
 declare -A post_cmd
 
 # default command to execute after screenshots (compress png)
-post_cmd["screenshot"]="${SNIP_SCREENSHOT_CMD:-"optipng \"%DEST%\" &"}"
+post_cmd["screenshot"]="${SNIP_SCREENSHOT_CMD:-"oxipng -o max \"%DEST%\" &"}"
 
 # default command to execute after screencasts (strip audio)
 post_cmd["record"]="${SNIP_RECORD_CMD:-"ffmpeg -i \"%DEST%\" -c copy -an \"noa_%DEST%\" && mv \"noa_%DEST%\" \"%DEST%\""}"

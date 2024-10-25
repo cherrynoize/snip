@@ -3,10 +3,10 @@
 #########################################
 
 # default path for screenshots
-export SNIP_PATH="$HOME/pictures/scrot"
+export SNIP_PATH="${SNIP_PATH:-"$SCROT_DIR"}"
 
 # default path for screencasts
-export SNIP_PATH_SCAST="$HOME/pictures/scast"
+export SNIP_PATH_SCAST="${SNIP_PATH_SCAST:-"$SCAST_DIR"}"
 
 # default filename
 #export SNIP_FILENAME="$(date '+%Y-%m-%d-%H%M%S')_"'$wx$h_'"$(hostname)-${USER}_snip"
